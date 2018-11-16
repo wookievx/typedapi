@@ -1,15 +1,12 @@
 package typedapi.server.openapi
 
-import typedapi.shared.MediaType
+import typedapi.shared.{MediaType, MethodType}
 
-trait ResponseOf[V, MT <: MediaType, R] {
+trait ResponseOf[V, M <: MethodType, MT <: MediaType, R] {
   def response: R
 }
 
-object ResponseOf {
 
-}
-
-trait ResponseModifier[V, Repr] {
-  def applyTo(repr: Repr): Repr
+trait ResponseModifier[K, V, Repr] {
+  def applyTo(key: K, repr: Repr): Repr
 }

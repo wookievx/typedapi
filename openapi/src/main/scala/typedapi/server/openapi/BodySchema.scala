@@ -1,21 +1,17 @@
 package typedapi.server.openapi
 
-import typedapi.shared.MediaType
+import typedapi.shared.{ApiOp, MediaType}
 import ParameterSchema.Location
 
 trait PathElem[K, Repr] {
   def applyTo(key: K, repr: Repr): Repr
 }
 
-trait Schema[K, T, Repr] {
-  def applyTo(repr: Repr): Repr
-}
-
 trait BodySchema[T, MT <: MediaType, Repr] {
   def applyTo(repr: Repr): Repr
 }
 
-trait ParameterSchema[K, T, Repr] {
+trait ParameterSchema[K, T, Loc <: ApiOp, Repr] {
   def applyTo(key: K, repr: Repr, in: Location): Repr
   def applyOpt(key: K, repr: Repr, in: Location): Repr
   def applyMany(key: K, repr: Repr, in: Location): Repr
