@@ -70,4 +70,9 @@ object Dependencies {
   val ammoniteSupport = Seq(
     "org.scalaj" %% "scalaj-http" % scalajHttpV % Compile
   )
+
+  private val commonsVersion: String = "1.34.1"
+  val commonsRest = Seq(
+    "com.avsystem.commons" %% "commons-rest"  % commonsVersion,
+  )
 }
