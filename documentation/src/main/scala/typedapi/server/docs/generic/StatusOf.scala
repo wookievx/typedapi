@@ -1,4 +1,4 @@
-package typedapi.server.openapi.derive
+package typedapi.server.docs.generic
 
 import com.avsystem.commons.rest.openapi.Response
 

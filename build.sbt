@@ -93,6 +93,7 @@ lazy val typedapi = project
     `client-js`, 
     `client-jvm`, 
     server, 
+    documentation,
     `http4s-client`, 
     `http4s-server`, 
     `akka-http-client`,
@@ -221,12 +222,13 @@ lazy val `ammonite-client-support` = project
   )
   .dependsOn(`scalaj-http-client`)
 
-lazy val openapi = project
-  .in(file("openapi"))
+lazy val documentation = project
+  .in(file("documentation"))
   .settings(
     commonSettings,
+//    scalacOptions += "-Xlog-implicits",
     mavenSettings,
-    name := "typedapi-openapi",
+    name := "typedapi-documentation",
     libraryDependencies ++= Dependencies.commonsRest
   )
   .dependsOn(server)

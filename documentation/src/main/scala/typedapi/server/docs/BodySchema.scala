@@ -1,4 +1,4 @@
-package typedapi.server.openapi
+package typedapi.server.docs
 
 import typedapi.shared.{ApiOp, MediaType}
 import ParameterSchema.Location
@@ -8,7 +8,7 @@ trait PathElem[K, Repr] {
 }
 
 trait BodySchema[T, MT <: MediaType, Repr] {
-  def applyTo(repr: Repr): Repr
+  def applyTo(mediaType: MT, repr: Repr): Repr
 }
 
 trait ParameterSchema[K, T, Loc <: ApiOp, Repr] {

@@ -74,5 +74,6 @@ object Dependencies {
   private val commonsVersion: String = "1.34.1"
   val commonsRest = Seq(
     "com.avsystem.commons" %% "commons-rest"  % commonsVersion,
+    "org.specs2"  %% "specs2-core" % specs2V % Test
   )
 }

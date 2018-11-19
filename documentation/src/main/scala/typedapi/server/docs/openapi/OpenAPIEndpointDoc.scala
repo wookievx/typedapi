@@ -1,20 +1,20 @@
-package typedapi.server.openapi
+package typedapi.server.docs.openapi
 
-import com.avsystem.commons.misc.OptArg
 import com.avsystem.commons.rest.openapi._
-import shapeless.Witness
-import typedapi.server.openapi.OpenAPIEndpointDoc.MethodLens
+import typedapi.server.docs._
 import typedapi.shared.{MediaType => _, _}
+import OpenAPIEndpointDoc.MethodLens
+import typedapi.server.StatusCodes
 
 case class OpenAPIEndpointDoc(
-  lens: MethodLens[_],
+  lens: MethodLens[_ <: MethodType],
   definitions: Set[RefOr[Schema]] = Set.empty,
-  pathString: OptArg[String] = OptArg.Empty,
+  pathString: String = "/",
   item: PathItem
 ) {
 
   def prepend(segment: String): OpenAPIEndpointDoc = copy(
-    pathString = s"$segment/${this.pathString}"
+    pathString = s"/$segment${this.pathString}"
   )
 
   def modifyOperation(f: Operation => Operation): OpenAPIEndpointDoc = copy(
@@ -61,22 +61,20 @@ object OpenAPIEndpointDoc {
   )
 
   import typedapi.shared.MediaType
-  private class OpenApiEndpointResponse[T, M <: MethodType, MT <: MediaType](implicit
-    wit: Witness.Aux[MT],
-    show: WitnessToString[MT],
+  private class OpenApiEndpointResponse[T, M <: MethodType, MT <: MediaType](
     lens: MethodLens[M],
     resolver: SchemaResolver,
     restSchema: RestSchema[T]
   ) extends ResponseOf[T, M, MT, OpenAPIEndpointDoc] {
-    override def response: OpenAPIEndpointDoc = {
+    override def response(mediaType: MT): OpenAPIEndpointDoc = {
       val schema = resolver.resolve(restSchema)
       val responses = Responses(
         Map(
-          200 ->
+          StatusCodes.Ok.statusCode ->
           RefOr(
             Response(
               content = Map(
-                show.show(wit.value) ->
+                mediaType.value ->
                 MediaType(
                   schema = schema
                 )
@@ -105,14 +103,12 @@ object OpenAPIEndpointDoc {
 
 
   implicit def responseOf[T, M <: MethodType, MT <: MediaType](implicit
-    wit: Witness.Aux[MT],
-    show: WitnessToString[MT],
     lens: MethodLens[M],
     resolver: SchemaResolver,
     restSchema: RestSchema[T]
-  ): ResponseOf[T, M, MT, OpenAPIEndpointDoc] = new OpenApiEndpointResponse()
+  ): ResponseOf[T, M, MT, OpenAPIEndpointDoc] = new OpenApiEndpointResponse(lens, resolver, restSchema)
 
-  private class HeaderResponseModifier[K, T](implicit
+  private class HeaderResponseModifier[K, T](
     resolver: SchemaResolver,
     restSchema: RestSchema[T]
   ) extends ResponseModifier[K, T, OpenAPIEndpointDoc] {
@@ -136,24 +132,20 @@ object OpenAPIEndpointDoc {
   }
 
   implicit def headerModifier[K, T](implicit
-    wit: Witness.Aux[K],
-    show: WitnessToString[K],
     resolver: SchemaResolver,
     restSchema: RestSchema[T]
-  ): ResponseModifier[K, T, OpenAPIEndpointDoc] = new HeaderResponseModifier()
+  ): ResponseModifier[K, T, OpenAPIEndpointDoc] = new HeaderResponseModifier(resolver, restSchema)
 
 
-  private class BodyEndpointModifier[T, MT <: MediaType](implicit
-    wit: Witness.Aux[MT],
-    show: WitnessToString[MT],
+  private class BodyEndpointModifier[T, MT <: MediaType](
     resolver: SchemaResolver,
     restSchema: RestSchema[T]
   ) extends BodySchema[T, MT, OpenAPIEndpointDoc] {
-    override def applyTo(repr: OpenAPIEndpointDoc): OpenAPIEndpointDoc = {
+    override def applyTo(mediaType: MT, repr: OpenAPIEndpointDoc): OpenAPIEndpointDoc = {
       val schema = resolver.resolve(restSchema)
       val reqBody = RequestBody(
         content = Map(
-          show.show(wit.value) ->
+          mediaType.value ->
           MediaType(
             schema = schema
           )
@@ -169,11 +161,9 @@ object OpenAPIEndpointDoc {
   }
 
   implicit def bodyEndpointModifier[T, MT <: MediaType](implicit
-    wit: Witness.Aux[MT],
-    show: WitnessToString[MT],
     resolver: SchemaResolver,
     restSchema: RestSchema[T]
-  ): BodySchema[T, MT, OpenAPIEndpointDoc] = new BodyEndpointModifier()
+  ): BodySchema[T, MT, OpenAPIEndpointDoc] = new BodyEndpointModifier(resolver, restSchema)
 
   sealed trait LocationStrategy[Loc] {
     def modelLocation: Location
@@ -204,7 +194,7 @@ object OpenAPIEndpointDoc {
     override def many(parameter: Parameter): Parameter = parameter
   }
 
-  private class ParameterEndpointModifier[K, T, Loc <: ApiOp](implicit
+  private class ParameterEndpointModifier[K, T, Loc <: ApiOp](
     resolver: SchemaResolver,
     restSchema: RestSchema[T],
     locationStrategy: LocationStrategy[Loc]
@@ -244,12 +234,11 @@ object OpenAPIEndpointDoc {
   }
 
   implicit def parameterEndpointModifier[K, T, Loc <: ApiOp](implicit
-    wit: Witness.Aux[K],
-    show: WitnessToString[K],
     resolver: SchemaResolver,
     restSchema: RestSchema[T],
     locationStrategy: LocationStrategy[Loc]
-  ): ParameterSchema[K, T, Loc, OpenAPIEndpointDoc] = new ParameterEndpointModifier()
+  ): ParameterSchema[K, T, Loc, OpenAPIEndpointDoc] =
+    new ParameterEndpointModifier(resolver, restSchema, locationStrategy)
 
 
   implicit def pathElem[K]: PathElem[K, OpenAPIEndpointDoc] = (k, repr) => repr.prepend(k.toString)

@@ -1,4 +1,4 @@
-package typedapi.server.openapi
+package typedapi.server.docs
 
 import shapeless._
 import shapeless.labelled.FieldType
@@ -29,7 +29,6 @@ trait LowPriorityDerivations {
   implicit def pathExtractor[S, El <: HList, KIn <: HList, VIn <: HList, M <: MethodType, Resp, DocRepr](implicit
     pathElem: PathElem[S, DocRepr],
     wit: Witness.Aux[S],
-    show: WitnessToString[S],
     next: Derivation[El, KIn, VIn, M, Resp, DocRepr]
   ) =
     new Derivation[S :: El, KIn, VIn, M, Resp, DocRepr] {
@@ -120,55 +119,63 @@ trait MidPriorityDerivations extends LowPriorityDerivations {
   ](implicit
     wit: Witness.Aux[K],
     show: WitnessToString[K],
-    parameterSchema: ParameterSchema[K, T, HeaderInput, DocRepr],
+    parameterSchema: ParameterSchema[K, V, HeaderInput, DocRepr],
     next: Derivation[El, KIn, VIn, M, Resp, DocRepr]
   ) = new Derivation[ServerHeaderMatchInput :: El, K :: KIn, Map[String, V] :: VIn, M, Resp, DocRepr] {
     override def derive: DocRepr = parameterSchema.applyMany(wit.value, next.derive, ParameterSchema.Header)
   }
 
   implicit def getExtractor[MT <: MediaType, A, DocRepr](implicit
+    wit: Witness.Aux[MT],
     responseSchema: ResponseOf[A, GetCall, MT, DocRepr],
   ) =
     new Derivation[HNil, HNil, HNil, GetCall, FieldType[MT, A], DocRepr] {
-      override def derive: DocRepr = responseSchema.response
+      override def derive: DocRepr = responseSchema.response(wit.value)
     }
 
   implicit def postExtractor[MT <: MediaType, A, DocRepr](implicit
+    wit: Witness.Aux[MT],
     responseSchema: ResponseOf[A, PostCall, MT, DocRepr]
   ) =
     new Derivation[HNil, HNil, HNil, PostCall, FieldType[MT, A], DocRepr] {
-      override def derive: DocRepr = responseSchema.response
+      override def derive: DocRepr = responseSchema.response(wit.value)
     }
 
   implicit def postWithBodyExtractor[MT <: MediaType, BMT <: MediaType, Req, A, DocRepr](implicit
+    witResp: Witness.Aux[MT],
+    witReq: Witness.Aux[BMT],
     responseSchema: ResponseOf[A, PostWithBodyCall, MT, DocRepr],
     requestSchema: BodySchema[Req, BMT, DocRepr]
   ) =
     new Derivation[HNil, FieldType[BMT, BodyField.T] :: HNil, Req :: HNil, PostWithBodyCall, FieldType[MT, A], DocRepr] {
       override def derive: DocRepr =
-        requestSchema.applyTo(responseSchema.response)
+        requestSchema.applyTo(witReq.value, responseSchema.response(witResp.value))
     }
 
   implicit def putExtractor[MT <: MediaType, A, DocRepr](implicit
+    wit: Witness.Aux[MT],
     responseSchema: ResponseOf[A, PutCall, MT, DocRepr]
   ) =
     new Derivation[HNil, HNil, HNil, PutCall, FieldType[MT, A], DocRepr] {
-      override def derive: DocRepr = responseSchema.response
+      override def derive: DocRepr = responseSchema.response(wit.value)
     }
 
   implicit def putWithBodyExtractor[MT <: MediaType, BMT <: MediaType, Req, A, DocRepr](implicit
+    witResp: Witness.Aux[MT],
+    witReq: Witness.Aux[BMT],
     responseSchema: ResponseOf[A, PutWithBodyCall, MT, DocRepr],
     requestSchema: BodySchema[Req, BMT, DocRepr]
   ) =
     new Derivation[HNil, FieldType[BMT, BodyField.T] :: HNil, Req :: HNil, PutWithBodyCall, FieldType[MT, A], DocRepr] {
       override def derive: DocRepr =
-        requestSchema.applyTo(responseSchema.response)
+        requestSchema.applyTo(witReq.value, responseSchema.response(witResp.value))
     }
 
   implicit def deleteExtractor[MT <: MediaType, A, DocRepr](implicit
+    wit: Witness.Aux[MT],
     responseSchema: ResponseOf[A, DeleteCall, MT, DocRepr]
   ) =
     new Derivation[HNil, HNil, HNil, DeleteCall, FieldType[MT, A], DocRepr] {
-      override def derive: DocRepr = responseSchema.response
+      override def derive: DocRepr = responseSchema.response(wit.value)
     }
 }

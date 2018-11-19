@@ -1,9 +1,9 @@
-package typedapi.server.openapi
+package typedapi.server.docs
 
 import typedapi.shared.{MediaType, MethodType}
 
 trait ResponseOf[V, M <: MethodType, MT <: MediaType, R] {
-  def response: R
+  def response(mediaType: MT): R
 }
 
 
