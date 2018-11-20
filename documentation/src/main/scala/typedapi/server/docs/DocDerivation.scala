@@ -49,7 +49,7 @@ trait MidPriorityDerivations extends LowPriorityDerivations {
     next: Derivation[El, KIn, VIn, M, Resp, DocRepr]
   ) = new Derivation[SegmentInput :: El, K :: KIn, V :: VIn, M, Resp, DocRepr] {
     override def derive: DocRepr =
-      pathElem.applyTo(wit.value, parameterSchema.applyTo(wit.value, next.derive, ParameterSchema.Path))
+      pathElem.applyTo(wit.value, parameterSchema.applyTo(wit.value, next.derive, ParameterSchema.Path), isQuery = true)
   }
 
   implicit def queryExtractor[

@@ -4,7 +4,7 @@ import typedapi.shared.{ApiOp, MediaType}
 import ParameterSchema.Location
 
 trait PathElem[K, Repr] {
-  def applyTo(key: K, repr: Repr): Repr
+  def applyTo(key: K, repr: Repr, isQuery: Boolean = false): Repr
 }
 
 trait BodySchema[T, MT <: MediaType, Repr] {

@@ -241,6 +241,9 @@ object OpenAPIEndpointDoc {
     new ParameterEndpointModifier(resolver, restSchema, locationStrategy)
 
 
-  implicit def pathElem[K]: PathElem[K, OpenAPIEndpointDoc] = (k, repr) => repr.prepend(k.toString)
+  implicit def pathElem[K]: PathElem[K, OpenAPIEndpointDoc] = (k, repr, isQuery) => {
+    if (isQuery) repr.prepend(s"{$k}")
+    else repr.prepend(k.toString)
+  }
 
 }

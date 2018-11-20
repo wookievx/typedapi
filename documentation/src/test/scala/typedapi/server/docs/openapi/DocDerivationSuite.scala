@@ -23,11 +23,11 @@ class DocDerivationSuite extends Specification {
     val docs = document(Api)
 
     "where path is correct" >> {
-      docs.paths.paths must haveKey("/find/name/")
+      docs.paths.paths must haveKey("/find/{name}/")
     }
 
     def operation =
-      docs.paths.paths("/find/name/")
+      docs.paths.paths("/find/{name}/")
         .assumeValue.put.toOption
 
     "where operation put is defined and contains all parameters" >> {
