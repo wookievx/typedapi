@@ -220,13 +220,3 @@ lazy val `ammonite-client-support` = project
     libraryDependencies ++= Dependencies.ammoniteSupport
   )
   .dependsOn(`scalaj-http-client`)
-
-lazy val openapi = project
-  .in(file("openapi"))
-  .settings(
-    commonSettings,
-    mavenSettings,
-    name := "typedapi-openapi",
-    libraryDependencies ++= Dependencies.commonsRest
-  )
-  .dependsOn(server)
