@@ -41,6 +41,11 @@ object Dependencies {
     "com.typesafe.akka" %% "akka-http-core" % akkaHttpV % Provided
   )
 
+  val finagle = Seq(
+    "com.twitter" %% "finagle-http" % "19.3.0",
+    "org.typelevel" %% "cats-effect" % "1.2.0"
+  )
+
   private val scalajHttpV = "2.4.1"
 
   val scalajHttpClient = Seq(

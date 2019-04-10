@@ -48,8 +48,8 @@ val `compiler-2.11` = Seq(
 lazy val commonSettings = Seq(
   organization  := "com.github.pheymann",
   version       := "0.2.0",
-  crossScalaVersions := Seq("2.11.11", "2.12.4"),
-  scalaVersion       := "2.12.4",
+  crossScalaVersions := Seq("2.11.11", "2.12.8"),
+  scalaVersion       := "2.12.8",
   scalacOptions      ++= { CrossVersion.partialVersion(scalaVersion.value) match {
     case Some((2, 12)) => `compiler-2.12`
     case Some((2, 11)) => `compiler-2.11`
@@ -176,6 +176,16 @@ lazy val `akka-http-server` = project
     mavenSettings,
     name := "typedapi-akka-http-server",
     libraryDependencies ++= Dependencies.akkaHttpServer
+  )
+  .dependsOn(server)
+
+lazy val `finagle-server` = project
+  .in(file("finagle-server"))
+  .settings(
+    commonSettings,
+    mavenSettings,
+    name := "typedapi-finagle-server",
+    libraryDependencies ++= Dependencies.finagle
   )
   .dependsOn(server)
 
